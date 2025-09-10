@@ -1,0 +1,70 @@
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+
+export default function AdminSidebar() {
+  const { setAuth } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth");
+    setAuth(null); // clear context
+    navigate("/login"); // redirect
+  };
+
+  return (
+    <div className="w-64 bg-gray-800 text-white min-h-screen p-4 flex flex-col justify-between">
+      {/* Navigation Links */}
+      <div>
+        <h2 className="text-xl font-bold mb-6">Admin Panel</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link to="/admin/users-upload" className="hover:text-gray-300">
+              Upload Users
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/properties-upload" className="hover:text-gray-300">
+              Upload Properties
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/demands" className="hover:text-gray-300">
+              Create Demand
+            </Link>
+          </li>
+          {/* <li>
+            <Link to="/admin/payments" className="hover:text-gray-300">
+              Payments
+            </Link>
+          </li> */}
+          <li>
+            <Link to="/admin/search-properties" className="hover:text-gray-300">
+              Search Properties
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/reports" className="hover:text-gray-300">
+              Reports
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/reconciliation" className="hover:text-gray-300">
+              Reconciliation
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Logout Button */}
+      <div className="mt-8">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white font-semibold"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+}

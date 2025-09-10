@@ -1,0 +1,101 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+export default function SearchProperties() {
+  const [properties, setProperties] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filtered, setFiltered] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = JSON.parse(localStorage.getItem("auth"))?.token;
+        console.log("Search Properties token: " + token);
+        const res = await axios.get(
+          "http://localhost:5000/api/admin/properties",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setProperties(res.data);
+        setFiltered(res.data);
+      } catch (err) {
+        console.error("Error fetching properties:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const lower = search.toLowerCase();
+    setFiltered(
+      properties.filter(
+        (p) =>
+          p.propertyId.toLowerCase().includes(lower) ||
+          p.shopName.toLowerCase().includes(lower) ||
+          p.area.toLowerCase().includes(lower) ||
+          p.ward.toLowerCase().includes(lower)
+      )
+    );
+  }, [search, properties]);
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Search Properties</h2>
+
+      <input
+        type="text"
+        placeholder="Search by ID, Shop, Area, or Ward"
+        className="w-full border px-3 py-2 rounded mb-6"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      <div className="space-y-4">
+        {filtered.map((prop) => (
+          <div
+            key={prop.propertyId}
+            className="border rounded-lg p-4 bg-white shadow"
+          >
+            <h3 className="text-lg font-semibold">
+              {prop.shopName} ({prop.propertyId})
+            </h3>
+            <p className="text-gray-600">
+              Area: {prop.area}, Ward: {prop.ward}
+            </p>
+
+            {prop.userRepsonseDtos?.length > 0 && (
+              <div className="mt-3">
+                <h4 className="font-medium">Users:</h4>
+                <ul className="ml-4 list-disc">
+                  {prop.userRepsonseDtos.map((u) => (
+                    <li key={u.userId} className="mb-2">
+                      <p>
+                        {u.name} ({u.email}) – {u.role}
+                      </p>
+                      {u.demandResForPropertyList?.length > 0 && (
+                        <div className="ml-4 mt-1 text-sm text-gray-700">
+                          <h5 className="font-medium">Demands:</h5>
+                          <ul className="list-disc ml-4">
+                            {u.demandResForPropertyList.map((d) => (
+                              <li key={d.demandId}>
+                                {d.amount} due {d.dueDate} –{" "}
+                                <span className="font-semibold">
+                                  {d.status}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,84 @@
+// src/pages/Reconciliation.jsx
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import config from "../config";
+
+export default function Reconciliation() {
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const token = JSON.parse(localStorage.getItem("auth"))?.token;
+
+  useEffect(() => {
+    async function fetchReconciliation() {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `${config.BASE_URL}/api/admin/reconciliation`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setRecords(res.data);
+      } catch (err) {
+        setError("Failed to fetch reconciliation records");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchReconciliation();
+  }, [token]);
+
+  if (loading)
+    return <p className="text-gray-600">Loading reconciliation data...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Reconciliation Records</h1>
+      <div className="overflow-x-auto">
+        <table className="w-full border border-gray-300 text-sm">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="border px-2 py-2">Vendor ID</th>
+              <th className="border px-2 py-2">Vendor Name</th>
+              <th className="border px-2 py-2">Demand ID</th>
+              <th className="border px-2 py-2">Property Code</th>
+              <th className="border px-2 py-2">Order Amount</th>
+              <th className="border px-2 py-2">Payment Amount</th>
+              <th className="border px-2 py-2">Paid At</th>
+              <th className="border px-2 py-2">Payment ID</th>
+              <th className="border px-2 py-2">Mode</th>
+              <th className="border px-2 py-2">Status</th>
+              <th className="border px-2 py-2">Service Charge</th>
+              <th className="border px-2 py-2">Service Tax</th>
+              <th className="border px-2 py-2">Settlement Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((rec) => (
+              <tr key={rec.id} className="hover:bg-gray-100">
+                <td className="border px-2 py-2">{rec.vendorId}</td>
+                <td className="border px-2 py-2">{rec.vendorName}</td>
+                <td className="border px-2 py-2">{rec.demandId}</td>
+                <td className="border px-2 py-2">{rec.propertyCode}</td>
+                <td className="border px-2 py-2">{rec.orderAmount}</td>
+                <td className="border px-2 py-2">{rec.paymentAmount}</td>
+                <td className="border px-2 py-2">
+                  {rec.paidAt ? new Date(rec.paidAt).toLocaleString() : "-"}
+                </td>
+                <td className="border px-2 py-2">{rec.paymentId}</td>
+                <td className="border px-2 py-2">{rec.paymentMode}</td>
+                <td className="border px-2 py-2">{rec.paymentStatus}</td>
+                <td className="border px-2 py-2">{rec.serviceCharge}</td>
+                <td className="border px-2 py-2">{rec.serviceTax}</td>
+                <td className="border px-2 py-2">{rec.settlementAmount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
